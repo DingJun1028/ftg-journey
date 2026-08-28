@@ -25,6 +25,21 @@ export default function SustainPage() {
       <h1 className="section-title mt-2">🌍 永續專案訂立區</h1>
       <p className="text-gray-500 text-sm mb-2">訂立這趟旅程的永續目標，後續在「永續成果」填寫實際值即可追蹤達成率。</p>
 
+      <button
+        className="btn-outline w-full mb-4 text-sm"
+        onClick={async () => {
+          const tpl = [
+            { name: '無痕山林行動', target: 1, unit: '次' },
+            { name: '在地小農採買', target: 1, unit: '次' },
+            { name: '減少一次性餐具', target: 50, unit: '件' },
+            { name: '低碳移動（步行/大眾運輸）', target: 5, unit: 'km' },
+            { name: '團隊 ESG 任務完成數', target: 3, unit: '項' },
+          ];
+          for (const t of tpl) await addSustainability(id, t);
+          load();
+        }}
+      >⚡ 套用官網「ESG 戶外團隊日」六大模組預設任務</button>
+
       <form onSubmit={add} className="card mb-5 flex gap-2 flex-wrap">
         <input className="input flex-1 min-w-[120px]" placeholder="目標名稱（如：減碳）" value={name} onChange={e => setName(e.target.value)} />
         <input className="input w-24" type="number" placeholder="目標值" value={target} onChange={e => setTarget(e.target.value)} />

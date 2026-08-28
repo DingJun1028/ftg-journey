@@ -65,12 +65,26 @@ export default function ImpactPage() {
           <div key={m.id} className="card flex items-center justify-between">
             <div className="flex-1">
               <div className="font-medium text-sm">{m.label}</div>
-              <div className="text-xs text-gray-400">單位：{m.unit}</div>
+              <div className="text-xs text-gray-400">單位：{m.unit} · {m.note}</div>
+              {m.sdg && m.sdg.length > 0 && (
+                <div className="text-xs text-ftg-green mt-1">SDG {m.sdg.join(', ')}</div>
+              )}
             </div>
             <input type="number" className="input w-24 text-right" value={impact[m.id]?.value || 0}
               onChange={e => setVal(m.id, e.target.value)} />
           </div>
         ))}
+      </div>
+
+      {/* 官網 ESG Impact Note 對應：SDGs 彙總 */}
+      <div className="card mt-4 bg-ftg-sand">
+        <h2 className="font-bold text-sm mb-2">📊 官網 ESG Impact Note 對應（SDGs 彙總）</h2>
+        <p className="text-xs text-gray-500 mb-2">自動彙整所有指標對應的聯合國永續發展目標，對應官網「ESG／SDGs 對應整理」。</p>
+        <div className="flex flex-wrap gap-1">
+          {Array.from(new Set(IMPACT_METRICS.flatMap(m => m.sdg || []))).sort((a, b) => a - b).map(sdg => (
+            <span key={sdg} className="text-xs bg-ftg-green text-white px-2 py-0.5 rounded-full">SDG {sdg}</span>
+          ))}
+        </div>
       </div>
 
       <button onClick={genReport} className="btn-primary w-full mt-5">📥 產出永續報告（Markdown）</button>

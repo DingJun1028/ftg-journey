@@ -28,15 +28,18 @@ export const STAGES = {
 };
 
 // 永續成果指標定義（後段收集，可進永續報告）
+// sdg: 對應聯合國永續發展目標 (SDGs) 編號，用於官網 ESG Impact Note 的「ESG/SDGs 對應整理」
 export const IMPACT_METRICS = [
-  { id: 'walkKm', label: '步行 / 低碳移動距離 (km)', unit: 'km', default: 0 },
-  { id: 'co2Saved', label: '預估減碳量 (kg CO₂e)', unit: 'kg', default: 0 },
-  { id: 'localSpend', label: '在地消費金額 (NT$)', unit: 'NT$', default: 0 },
-  { id: 'singleUseAvoided', label: '減少一次性用品 (件)', unit: '件', default: 0 },
-  { id: 'participants', label: '參與人數 (人)', unit: '人', default: 0 },
-  { id: 'volunteerHrs', label: '永續行動投入時數 (hr)', unit: 'hr', default: 0 },
-  { id: 'treesPlanted', label: '種樹 / 復育數量 (株)', unit: '株', default: 0 },
-  { id: 'wasteRecycled', label: '回收 / 堆肥量 (kg)', unit: 'kg', default: 0 },
+  { id: 'walkKm', label: '步行 / 低碳移動距離 (km)', unit: 'km', default: 0, sdg: [11, 13], note: '永續城市／氣候行動' },
+  { id: 'co2Saved', label: '預估減碳量 (kg CO₂e)', unit: 'kg', default: 0, sdg: [13], note: '氣候行動' },
+  { id: 'localSpend', label: '在地消費金額 (NT$)', unit: 'NT$', default: 0, sdg: [8, 11, 12], note: '經濟成長／永續城市／責任消費' },
+  { id: 'singleUseAvoided', label: '減少一次性用品 (件)', unit: '件', default: 0, sdg: [12, 14], note: '責任消費／海洋生態' },
+  { id: 'participants', label: '參與人數 (人)', unit: '人', default: 0, sdg: [3, 8], note: '健康福祉／經濟成長' },
+  { id: 'volunteerHrs', label: '永續行動投入時數 (hr)', unit: 'hr', default: 0, sdg: [4, 15], note: '優質教育／陸地生態' },
+  { id: 'treesPlanted', label: '種樹 / 復育數量 (株)', unit: '株', default: 0, sdg: [15], note: '陸地生態' },
+  { id: 'wasteRecycled', label: '回收 / 堆肥量 (kg)', unit: 'kg', default: 0, sdg: [12, 15], note: '責任消費／陸地生態' },
+  { id: 'localValue', label: '地方共好與社會價值 (量化紀錄)', unit: '項', default: 0, sdg: [1, 11, 17], note: '消除貧窮／永續城市／夥伴關係' },
+  { id: 'esgActions', label: 'ESG 環境/社會行動亮點 (件)', unit: '件', default: 0, sdg: [7, 12, 13], note: '可負擔能源／責任消費／氣候行動' },
 ];
 
 let _db;
@@ -89,6 +92,9 @@ export async function getDB() {
 
       const flights = db.createObjectStore('flights', { keyPath: 'id' });
       flights.createIndex('byJourney', 'journeyId');
+
+      const opportunity = db.createObjectStore('opportunity', { keyPath: 'id' });
+      opportunity.createIndex('byJourney', 'journeyId');
     },
   });
   return _db;
@@ -567,6 +573,38 @@ export async function updateFlight(id, patch) {
 export async function removeFlight(id) {
   const db = await getDB();
   await db.delete('flights', id);
+}
+
+// ---------- Opportunity Map / Roadmap（對應官網高階主管共識營 mod5/mod6） ----------
+export async function listOpportunity(journeyId) {
+  const db = await getDB();
+  return db.getAllFromIndex('opportunity', 'byJourney', journeyId);
+}
+export async function addOpportunity(journeyId, data) {
+  const db = await getDB();
+  const o = {
+    id: uid(), journeyId,
+    title: data.title || '',
+    owner: data.owner || '',
+    priority: data.priority || 'P2', // P0/P1/P2/P3
+    status: data.status || 'idea', // idea/planning/doing/done
+    note: data.note || '',
+    createdAt: Date.now(),
+  };
+  await db.put('opportunity', o);
+  return o;
+}
+export async function updateOpportunity(id, patch) {
+  const db = await getDB();
+  const o = await db.get('opportunity', id);
+  if (!o) return;
+  Object.assign(o, patch);
+  await db.put('opportunity', o);
+  return o;
+}
+export async function removeOpportunity(id) {
+  const db = await getDB();
+  await db.delete('opportunity', id);
 }
 
 // ---------- 資訊去敏化（台灣個資法） ----------

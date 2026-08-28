@@ -4,6 +4,7 @@ import {
   listMembers, addMember, updateMember, removeMember,
   listCRM, addCRM, updateCRM, removeCRM,
   listBD, addBD, updateBD, removeBD,
+  listOpportunity, addOpportunity, removeOpportunity,
   exportAll, importAll,
 } from '../db';
 
@@ -13,12 +14,15 @@ export default function AdminPage() {
   const [members, setMembers] = useState([]);
   const [crm, setCrm] = useState([]);
   const [bd, setBd] = useState([]);
+  const [opp, setOpp] = useState([]);
+  const [oppForm, setOppForm] = useState({});
   const fileRef = useRef(null);
 
   async function loadAll() {
     setMembers(await listMembers(id));
     setCrm(await listCRM(id));
     setBd(await listBD(id));
+    setOpp(await listOpportunity(id));
   }
   useEffect(() => { loadAll(); }, [id]);
 
@@ -81,6 +85,7 @@ export default function AdminPage() {
         <button className={tab === 'members' ? 'chip-on' : 'chip'} onClick={() => setTab('members')}>梯次成員一覽表</button>
         <button className={tab === 'crm' ? 'chip-on' : 'chip'} onClick={() => setTab('crm')}>導遊專區 · CRM</button>
         <button className={tab === 'bd' ? 'chip-on' : 'chip'} onClick={() => setTab('bd')}>行政專區 · BD</button>
+        <button className={tab === 'opp' ? 'chip-on' : 'chip'} onClick={() => setTab('opp')}>Opportunity Map</button>
         <button className={tab === 'io' ? 'chip-on' : 'chip'} onClick={() => setTab('io')}>匯入匯出</button>
       </div>
 
@@ -174,6 +179,49 @@ export default function AdminPage() {
                 {x.note && <p className="text-xs text-gray-400">{x.note}</p>}
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {tab === 'opp' && (
+        <div>
+          <p className="text-sm text-gray-500 mb-3">對應官網「高階主管共識營」模組五/六：收斂 Opportunity Map 與後續行動路線（Roadmap）。</p>
+          <form onSubmit={async (e) => { e.preventDefault(); if (!oppForm.title) return; await addOpportunity(id, oppForm); setOppForm({}); loadAll(); }}
+            className="card mb-4 grid grid-cols-2 gap-2">
+            <input className="input col-span-2" placeholder="機會 / 行動項目 *" value={oppForm.title || ''} onChange={e => setOppForm({ ...oppForm, title: e.target.value })} />
+            <input className="input" placeholder="負責人" value={oppForm.owner || ''} onChange={e => setOppForm({ ...oppForm, owner: e.target.value })} />
+            <select className="input" value={oppForm.priority || 'P2'} onChange={e => setOppForm({ ...oppForm, priority: e.target.value })}>
+              <option value="P0">P0 最高</option>
+              <option value="P1">P1 高</option>
+              <option value="P2">P2 中</option>
+              <option value="P3">P3 低</option>
+            </select>
+            <select className="input" value={oppForm.status || 'idea'} onChange={e => setOppForm({ ...oppForm, status: e.target.value })}>
+              <option value="idea">想法</option>
+              <option value="planning">規劃中</option>
+              <option value="doing">執行中</option>
+              <option value="done">已完成</option>
+            </select>
+            <input className="input col-span-2" placeholder="備註" value={oppForm.note || ''} onChange={e => setOppForm({ ...oppForm, note: e.target.value })} />
+            <button className="btn-primary col-span-2" type="submit">＋ 加入 Opportunity Map</button>
+          </form>
+
+          <div className="space-y-2">
+            {opp.map(o => (
+              <div key={o.id} className="card text-sm">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="font-medium">{o.title}</div>
+                    <div className="text-xs text-gray-400 mt-1">
+                      負責人：{o.owner || '—'} · 優先序：<span className="text-ftg-orange font-bold">{o.priority}</span> · 狀態：{o.status}
+                    </div>
+                    {o.note && <div className="text-xs text-gray-500 mt-1">{o.note}</div>}
+                  </div>
+                  <button className="text-red-500 text-xs ml-2" onClick={async () => { await removeOpportunity(o.id); loadAll(); }}>刪除</button>
+                </div>
+              </div>
+            ))}
+            {opp.length === 0 && <p className="text-gray-400 text-sm text-center py-4">尚無 Opportunity Map 項目</p>}
           </div>
         </div>
       )}
