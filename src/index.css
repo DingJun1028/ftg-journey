@@ -1,0 +1,113 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== 基礎重置 / RWD 根設定 ===== */
+html, body, #root { height: 100%; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: #faf6ee;
+  color: #10243f;
+  font-family: 'Noto Sans TC', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
+  /* 防止行動裝置橫向彈跳 */
+  overscroll-behavior-y: none;
+}
+
+/* 尊重使用者減少動態偏好（無障礙） */
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+/* ===== 設計系統：元件層 ===== */
+@layer components {
+  /* 容器：行動優先，最大寬度收斂，左右安全邊距 */
+  .container-app {
+    @apply mx-auto w-full max-w-2xl px-5;
+  }
+  /* 頁面外層：預留底部 TabBar 空間 + 頂部安全區 */
+  .page {
+    @apply min-h-full px-5 pt-6 pb-28;
+    padding-top: calc(1.5rem + env(safe-area-inset-top));
+  }
+  .page-tight { @apply px-5 pt-6 pb-28; }
+
+  /* 標題階層 */
+  .section-title { @apply text-2xl font-bold text-ftg-forest tracking-tight; }
+  @screen sm { .section-title { @apply text-3xl; } }
+  .section-subtitle { @apply text-sm text-gray-500 mt-1; }
+
+  /* 卡片：統一圓角 / 陰影 / 間距，hover 微升 */
+  .card {
+    @apply bg-white rounded-2xl shadow-card p-5 border border-gray-100 transition-shadow;
+  }
+  .card-hover:hover { @apply shadow-card-hover; }
+
+  /* 按鈕：觸控友好最小 44px，圓角膠囊 */
+  .btn-primary {
+    @apply bg-ftg-green text-white px-5 py-3 rounded-full font-semibold text-sm
+           hover:bg-ftg-green-dark active:scale-[0.98] transition
+           min-h-[44px] flex items-center justify-center;
+  }
+  .btn-ghost {
+    @apply border border-ftg-green text-ftg-green px-5 py-3 rounded-full font-semibold text-sm
+           hover:bg-ftg-green hover:text-white active:scale-[0.98] transition
+           min-h-[44px] flex items-center justify-center;
+  }
+  .btn-outline {
+    @apply border border-gray-300 text-gray-600 px-5 py-3 rounded-full font-semibold text-sm
+           hover:border-ftg-green hover:text-ftg-green transition min-h-[44px] flex items-center justify-center;
+  }
+
+  /* 輸入框：觸控友好，focus 明確 */
+  .input {
+    @apply w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm
+           focus:outline-none focus:ring-2 focus:ring-ftg-green focus:border-transparent
+           placeholder:text-gray-400;
+    min-height: 44px;
+  }
+  textarea.input { @apply py-2.5; min-height: 88px; }
+
+  /* 徽章 / 標籤 */
+  .badge { @apply text-xs px-2.5 py-1 rounded-full font-medium; }
+  .chip {
+    @apply text-xs px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 font-medium
+           hover:bg-gray-200 transition;
+  }
+  .chip-on { @apply text-xs px-3 py-1.5 rounded-full bg-ftg-green text-white font-medium; }
+
+  /* 進度條 */
+  .progress-track { @apply w-full bg-gray-200 rounded-full h-2.5 overflow-hidden; }
+  .progress-fill { @apply bg-ftg-green h-2.5 rounded-full transition-all duration-500; }
+
+  /* 頂部使用者條 */
+  .user-bar {
+    @apply fixed top-0 inset-x-0 bg-ftg-forest text-white text-xs
+           flex justify-between items-center px-4 py-2 z-30;
+    padding-top: calc(0.5rem + env(safe-area-inset-top));
+  }
+
+  /* 底部 TabBar：安全區 */
+  .tabbar {
+    @apply fixed bottom-0 inset-x-0 bg-white border-t border-gray-200
+           flex justify-around py-2 z-20;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .tab-item { @apply flex flex-col items-center text-xs text-ftg-green gap-0.5; }
+
+  /* 照片網格：手機 2 欄 → 桌面 3 欄 */
+  .photo-grid { @apply grid grid-cols-2 sm:grid-cols-3 gap-3; }
+
+  /* 通用列表間距 */
+  .stack { @apply space-y-3; }
+}
+
+/* 全域無障礙：鍵盤 focus 可見 */
+:focus-visible { outline: 2px solid #c9a24b; outline-offset: 2px; }
+
+/* 捲動條纖細化 */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-thumb { background: rgba(16,36,63,0.2); border-radius: 3px; }
