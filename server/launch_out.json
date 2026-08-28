@@ -1,0 +1,15 @@
+Warning: To increase security of your API key located at C:/Users/dingj/.oci/oci_api_key, append an extra line with 'OCI_API_KEY' at the end. For more information, refer to https://docs.oracle.com/iaas/Content/API/Concepts/apisigningkey.htm. To suppress the warning, set the env variable SUPPRESS_LABEL_WARNING=True
+ServiceError:
+{
+    "client_version": "Oracle-PythonSDK/2.184.0, Oracle-PythonCLI/3.90.1",
+    "code": "LimitExceeded",
+    "logging_tips": "Please run the OCI CLI command using --debug flag to find more debug information.",
+    "message": "The following service limits were exceeded: standard-e2-micro-core-count. You can request a service limit increase from the Console's Limits, Quotas and Usage page or from the Help menu.",
+    "opc-request-id": "DD6B886F8FEB46C3867FCBB8FD8B1A13/000E9B56CBB094EEB4A0916A53494E83/238AA87BEDA81C78297277C4DB85215C",
+    "operation_name": "launch_instance",
+    "request_endpoint": "POST https://iaas.ap-singapore-1.oraclecloud.com/20160918/instances",
+    "status": 400,
+    "target_service": "compute",
+    "timestamp": "2026-08-28T14:52:36.038129+00:00",
+    "troubleshooting_tips": "See [https://docs.oracle.com/iaas/Content/API/References/apierrors.htm] for more information about resolving this error. If you are unable to resolve this issue, run this CLI command with --debug option and contact Oracle support and provide them the full error message."
+}
