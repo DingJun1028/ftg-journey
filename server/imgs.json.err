@@ -1,1 +1,0 @@
-Warning: To increase security of your API key located at C:/Users/dingj/.oci/oci_api_key, append an extra line with 'OCI_API_KEY' at the end. For more information, refer to https://docs.oracle.com/iaas/Content/API/Concepts/apisigningkey.htm. To suppress the warning, set the env variable SUPPRESS_LABEL_WARNING=True
