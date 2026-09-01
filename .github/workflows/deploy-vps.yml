@@ -1,0 +1,57 @@
+name: Deploy FTG Journey to VPS
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server/**'
+      - 'src/**'
+      - 'vite.config.js'
+      - 'package.json'
+      - 'package-lock.json'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Deploy server to VPS
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            sudo systemctl stop ftg-journey || true
+            rm -rf /tmp/ftg-deploy
+            mkdir -p /tmp/ftg-deploy
+            # Upload server files
+            tar czf - server.js package.json package-lock.json ftg-journey.db uploads/ | \
+              sudo tar xzf - -C /opt/ftg-journey
+            # Upload frontend
+            sudo rm -rf /var/www/ftg-journey-web/*
+            sudo cp -r dist/* /var/www/ftg-journey-web/
+            sudo chown -R www-data:www-data /var/www/ftg-journey-web
+            # Install deps and restart
+            sudo npm install --prefix /opt/ftg-journey --production --silent
+            sudo systemctl start ftg-journey
+            sleep 2
+            curl -sf http://127.0.0.1:8787/api/me || exit 1
+
+      - name: Verification
+        run: |
+          curl -sI https://journey.ftgtours.esggo.co/ | head -3
+          curl -sI https://journey-api.ftgtours.esggo.co/api/me | head -3
