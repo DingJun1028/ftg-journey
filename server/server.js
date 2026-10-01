@@ -49,6 +49,9 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS impact (
     id TEXT PRIMARY KEY, journey_id TEXT, metric_id TEXT, value REAL, note TEXT
   );
+  CREATE TABLE IF NOT EXISTS opportunities (
+    id TEXT PRIMARY KEY, journey_id TEXT, lat REAL, lng REAL, title TEXT, description TEXT, created_at INTEGER
+  );
 `);
 
 // helper
@@ -142,13 +145,28 @@ app.post('/api/journeys/:id/impact', verifyGoogleToken, (req, res) => {
   res.json({ id });
 });
 
+app.get('/api/journeys/:id/opportunities', verifyGoogleToken, (req, res) => res.json(all('SELECT * FROM opportunities WHERE journey_id=?', req.params.id)));
+app.post('/api/journeys/:id/opportunities', verifyGoogleToken, (req, res) => {
+  const id = uid();
+  run('INSERT INTO opportunities (id,journey_id,lat,lng,title,description,created_at) VALUES (?,?,?,?,?,?,?)',
+    id, req.params.id, req.body.lat, req.body.lng, req.body.title, req.body.description, Date.now());
+  res.json({ id });
+});
+
 app.get('/api/journeys/:id/public-report', verifyGoogleToken, (req, res) => {
   const j = get('SELECT * FROM journeys WHERE id=?', req.params.id);
   if (!j) return res.status(404).json({ error: 'not found' });
   const members = all('SELECT email,name,role,consent_public FROM journeys_members WHERE journey_id=?', req.params.id);
   const consented = members.filter(m => m.consent_public).map(m => ({ name: m.name, role: m.role }));
   const notes = all('SELECT date,mood,text FROM notes WHERE journey_id=?', req.params.id);
-  res.json({ title: j.title, serviceType: j.service_type, destination: j.destination, participantCount: members.length, publicParticipants: consented, notes, privacyNote: '依台灣個資法去識別化，僅含同意公開者姓名。' });
+  const opportunities = all('SELECT lat,lng,title,description FROM opportunities WHERE journey_id=?', req.params.id);
+  res.json({ title: j.title, serviceType: j.service_type, destination: j.destination, participantCount: members.length, publicParticipants: consented, notes, opportunities, privacyNote: '依台灣個資法去識別化，僅含同意公開者姓名。' });
 });
 
-app.listen(PORT, () => console.log(`FTG Journey server on :${PORT}`));
+// 僅在直接執行本檔時 listen；被 import（測試）時不開 port
+const isEntry = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (isEntry) {
+  app.listen(PORT, () => console.log(`FTG Journey server on :${PORT} (opportunities + map API enabled)`));
+}
+
+export { app, db };

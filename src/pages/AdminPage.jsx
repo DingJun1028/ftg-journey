@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { MapContainer, TileLayer, Marker, Popup } from 'leaflet';
 import {
   listMembers, addMember, updateMember, removeMember,
   listCRM, addCRM, updateCRM, removeCRM,
@@ -186,9 +187,34 @@ export default function AdminPage() {
       {tab === 'opp' && (
         <div>
           <p className="text-sm text-gray-500 mb-3">對應官網「高階主管共識營」模組五/六：收斂 Opportunity Map 與後續行動路線（Roadmap）。</p>
+
+          {/* Map view for opportunities with coordinates */}
+          {opp.some(o => o.lat && o.lng) && (
+            <div className="card mb-4 h-64">
+              <MapContainer center={[23.5, 121]} zoom={6} className="h-full w-full">
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                />
+                {opp.filter(o => o.lat && o.lng).map(o => (
+                  <Marker key={o.id} position={[o.lat, o.lng]}>
+                    <Popup>
+                      <div className="text-sm">
+                        <div className="font-medium">{o.title}</div>
+                        {o.note && <div className="text-xs text-gray-500">{o.note}</div>}
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
+            </div>
+          )}
+
           <form onSubmit={async (e) => { e.preventDefault(); if (!oppForm.title) return; await addOpportunity(id, oppForm); setOppForm({}); loadAll(); }}
             className="card mb-4 grid grid-cols-2 gap-2">
             <input className="input col-span-2" placeholder="機會 / 行動項目 *" value={oppForm.title || ''} onChange={e => setOppForm({ ...oppForm, title: e.target.value })} />
+            <input className="input" placeholder="緯度 (lat)" type="number" step="0.0001" value={oppForm.lat || ''} onChange={e => setOppForm({ ...oppForm, lat: parseFloat(e.target.value) || undefined })} />
+            <input className="input" placeholder="經度 (lng)" type="number" step="0.0001" value={oppForm.lng || ''} onChange={e => setOppForm({ ...oppForm, lng: parseFloat(e.target.value) || undefined })} />
             <input className="input" placeholder="負責人" value={oppForm.owner || ''} onChange={e => setOppForm({ ...oppForm, owner: e.target.value })} />
             <select className="input" value={oppForm.priority || 'P2'} onChange={e => setOppForm({ ...oppForm, priority: e.target.value })}>
               <option value="P0">P0 最高</option>
